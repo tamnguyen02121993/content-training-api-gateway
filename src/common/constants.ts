@@ -1,5 +1,6 @@
 export const IS_PUBLIC_KEY = 'isPublic';
 export const ROLES_KEY = 'roles';
+export const PERMISSIONS_KEY = 'permissions';
 
 export const MODULE_NAMES = {
   USER_CLIENT_MICROSERVICE: 'USER_CLIENT_MICROSERVICE',
@@ -11,6 +12,7 @@ export const USER_PATTERN_NAMES = {
   DELETE_USER: 'user.delete',
   GET_USER_BY_EMAIL: 'user.get_by_email',
   GET_USERS: 'user.get_users',
+  ASSIGN_ROLES_TO_USER: 'user.assign_roles_to_user',
 };
 
 export const ROLE_PATTERN_NAMES = {

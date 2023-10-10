@@ -5,12 +5,20 @@ import {
   Get,
   Inject,
   Param,
+  ParseIntPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { MODULE_NAMES, PERMISSION_PATTERN_NAMES, Role, Roles } from '../common';
+import {
+  MODULE_NAMES,
+  PERMISSION_PATTERN_NAMES,
+  Permission,
+  Permissions,
+  TableParamsDto,
+} from '../common';
 import { CreatePermissionDto } from './dtos';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -22,7 +30,7 @@ export class PermissionController {
     private readonly userClient: ClientKafka,
   ) {}
 
-  @Roles(Role.User, Role.Admin, Role.SuperAdmin)
+  @Permissions(Permission.ViewPermissionById)
   @Get(':id')
   async getPermissionById(@Param('id') id: string) {
     const result = await lastValueFrom(
@@ -31,16 +39,24 @@ export class PermissionController {
     return result;
   }
 
-  @Roles(Role.User, Role.Admin, Role.SuperAdmin)
+  @Permissions(Permission.ViewPermission)
   @Get()
-  async getPermissions() {
+  async getPermissions(
+    @Query() tableParamsDto: TableParamsDto,
+    @Query('currentPage', ParseIntPipe) currentPage: number,
+    @Query('pageSize', ParseIntPipe) pageSize: number,
+  ) {
     const result = await lastValueFrom(
-      this.userClient.send(PERMISSION_PATTERN_NAMES.GET_PERMISSIONS, {}),
+      this.userClient.send(PERMISSION_PATTERN_NAMES.GET_PERMISSIONS, {
+        ...tableParamsDto,
+        currentPage,
+        pageSize,
+      }),
     );
     return result;
   }
 
-  @Roles(Role.SuperAdmin)
+  @Permissions(Permission.CreatePermission)
   @Post()
   async createPermission(@Body() createPermissionDto: CreatePermissionDto) {
     const result = await lastValueFrom(
@@ -52,7 +68,7 @@ export class PermissionController {
     return result;
   }
 
-  @Roles(Role.SuperAdmin)
+  @Permissions(Permission.UpdatePermission)
   @Put(':id')
   async updatePermission(
     @Param('id') id: string,
@@ -67,7 +83,7 @@ export class PermissionController {
     return result;
   }
 
-  @Roles(Role.SuperAdmin)
+  @Permissions(Permission.DeletePermission)
   @Delete(':id')
   async deletePermission(@Param('id') id: string) {
     const result = await lastValueFrom(

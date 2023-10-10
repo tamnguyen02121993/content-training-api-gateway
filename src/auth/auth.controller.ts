@@ -1,6 +1,14 @@
-import { Body, Controller, Inject, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { lastValueFrom } from 'rxjs';
 import { AUTH_PATTERN_NAMES, MODULE_NAMES, Public } from '../common';
 import { LocalAuthGuard } from '../common/';
@@ -22,7 +30,6 @@ export class AuthController {
     const result = await lastValueFrom(
       this.userClient.send(AUTH_PATTERN_NAMES.SIGN_IN, req.user),
     );
-
     return result;
   }
 

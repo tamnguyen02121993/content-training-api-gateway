@@ -28,17 +28,18 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       if (!comparePasswordResult) {
         throw new UnauthorizedException();
       }
-
-      const roles = user.userRoles.map((userRole) => {
-        return userRole.role.name;
+      const permissionsByRoles = user.userRoles.map((userRole) => {
+        return userRole.role.rolePermissions.map(
+          (rolePermission) => rolePermission.permission.name,
+        );
       });
-
+      const flatPermissions = [...new Set(permissionsByRoles.flat(2))];
       return {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        roles,
+        permissions: flatPermissions,
       };
     } catch (error) {
       throw new UnauthorizedException();

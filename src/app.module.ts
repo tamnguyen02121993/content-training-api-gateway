@@ -4,7 +4,7 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ClientsModule } from '@nestjs/microservices';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { HttpExceptionFilter, RolesGuard } from './common';
+import { HttpExceptionFilter, PermissionsGuard } from './common';
 import { RoleModule } from './role/role.module';
 import { PermissionModule } from './permission/permission.module';
 import { USER_CLIENT_OPTIONS } from './options';
@@ -37,7 +37,7 @@ import { HealthModule } from './health/health.module';
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard,
+      useClass: PermissionsGuard,
     },
   ],
 })

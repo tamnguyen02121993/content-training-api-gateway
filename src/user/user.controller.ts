@@ -5,18 +5,18 @@ import {
   Get,
   Inject,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import {
   MODULE_NAMES,
-  Role,
-  Roles,
-  RolesGuard,
+  Permission,
+  Permissions,
+  TableParamsDto,
   USER_PATTERN_NAMES,
 } from '../common';
 import { CreateUserDto, UpdateUserDto } from './dtos';
@@ -30,7 +30,7 @@ export class UserController {
     private readonly userClient: ClientKafka,
   ) {}
 
-  @Roles(Role.Admin, Role.User, Role.SuperAdmin)
+  @Permissions(Permission.ViewUserByEmail)
   @Get('get-user-by-email')
   async getUserByEmail(@Query('email') email: string) {
     const result = await lastValueFrom(
@@ -39,16 +39,24 @@ export class UserController {
     return result;
   }
 
-  @Roles(Role.Admin, Role.SuperAdmin)
+  @Permissions(Permission.ViewUser)
   @Get()
-  async getUsers() {
+  async getUsers(
+    @Query() tableParamsDto: TableParamsDto,
+    @Query('currentPage', ParseIntPipe) currentPage: number,
+    @Query('pageSize', ParseIntPipe) pageSize: number,
+  ) {
     const result = await lastValueFrom(
-      this.userClient.send(USER_PATTERN_NAMES.GET_USERS, {}),
+      this.userClient.send(USER_PATTERN_NAMES.GET_USERS, {
+        ...tableParamsDto,
+        currentPage,
+        pageSize,
+      }),
     );
     return result;
   }
 
-  @Roles(Role.SuperAdmin)
+  @Permissions(Permission.CreateUser)
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto) {
     const result = await lastValueFrom(
@@ -57,7 +65,7 @@ export class UserController {
     return result;
   }
 
-  @Roles(Role.SuperAdmin)
+  @Permissions(Permission.UpdateUser)
   @Put(':id')
   async updateUser(
     @Param('id') id: string,
@@ -72,11 +80,25 @@ export class UserController {
     return result;
   }
 
-  @Roles(Role.SuperAdmin)
+  @Permissions(Permission.DeleteUser)
   @Delete(':id')
   async deleteUser(@Param('id') id: string) {
     const result = await lastValueFrom(
       this.userClient.send(USER_PATTERN_NAMES.DELETE_USER, id),
+    );
+    return result;
+  }
+
+  @Post('assign-roles-to-user')
+  async assignRolesToUser(
+    @Body('userId') userId: string,
+    @Body('roleIds') roleIds: string[],
+  ) {
+    const result = await lastValueFrom(
+      this.userClient.send(USER_PATTERN_NAMES.ASSIGN_ROLES_TO_USER, {
+        userId,
+        roleIds,
+      }),
     );
     return result;
   }

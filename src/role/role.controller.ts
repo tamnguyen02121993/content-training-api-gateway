@@ -5,12 +5,20 @@ import {
   Get,
   Inject,
   Param,
+  ParseIntPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { MODULE_NAMES, ROLE_PATTERN_NAMES, Role, Roles } from '../common';
+import {
+  MODULE_NAMES,
+  ROLE_PATTERN_NAMES,
+  Permission,
+  Permissions,
+  TableParamsDto,
+} from '../common';
 import { CreateRoleDto, UpdateRoleDto } from './dtos';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -22,7 +30,7 @@ export class RoleController {
     private readonly userClient: ClientKafka,
   ) {}
 
-  @Roles(Role.User, Role.Admin, Role.SuperAdmin)
+  @Permissions(Permission.ViewPermissionById)
   @Get(':id')
   async getRoleById(@Param('id') id: string) {
     const result = await lastValueFrom(
@@ -31,16 +39,24 @@ export class RoleController {
     return result;
   }
 
-  @Roles(Role.User, Role.Admin, Role.SuperAdmin)
+  @Permissions(Permission.ViewRole)
   @Get()
-  async getRoles() {
+  async getRoles(
+    @Query() tableParamsDto: TableParamsDto,
+    @Query('currentPage', ParseIntPipe) currentPage: number,
+    @Query('pageSize', ParseIntPipe) pageSize: number,
+  ) {
     const result = await lastValueFrom(
-      this.userClient.send(ROLE_PATTERN_NAMES.GET_ROLES, {}),
+      this.userClient.send(ROLE_PATTERN_NAMES.GET_ROLES, {
+        ...tableParamsDto,
+        currentPage,
+        pageSize,
+      }),
     );
     return result;
   }
 
-  @Roles(Role.SuperAdmin)
+  @Permissions(Permission.CreateRole)
   @Post()
   async createRole(@Body() createRoleDto: CreateRoleDto) {
     const result = await lastValueFrom(
@@ -49,7 +65,7 @@ export class RoleController {
     return result;
   }
 
-  @Roles(Role.SuperAdmin)
+  @Permissions(Permission.UpdateRole)
   @Put(':id')
   async updateRole(
     @Param('id') id: string,
@@ -64,7 +80,7 @@ export class RoleController {
     return result;
   }
 
-  @Roles(Role.SuperAdmin)
+  @Permissions(Permission.DeleteRole)
   @Delete(':id')
   async deleteRole(@Param('id') id: string) {
     const result = await lastValueFrom(

@@ -1,0 +1,17 @@
+export enum Permission {
+  ViewUser = 'ViewUser',
+  ViewUserByEmail = 'ViewUserByEmail',
+  CreateUser = 'CreateUser',
+  UpdateUser = 'UpdateUser',
+  DeleteUser = 'DeleteUser',
+  ViewRole = 'ViewRole',
+  ViewRoleById = 'ViewRoleById',
+  CreateRole = 'CreateRole',
+  UpdateRole = 'UpdateRole',
+  DeleteRole = 'DeleteRole',
+  ViewPermission = 'ViewPermission',
+  ViewPermissionById = 'ViewPermissionById',
+  CreatePermission = 'CreatePermission',
+  UpdatePermission = 'UpdatePermission',
+  DeletePermission = 'DeletePermission',
+}
